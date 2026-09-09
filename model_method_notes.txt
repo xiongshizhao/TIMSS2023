@@ -1,0 +1,101 @@
+TIMSS 2023 Grade 8 main-analysis method notes
+Script version: 04_main_analysis_v1.1_2026-09-04
+Run time: 2026-09-04 16:51:25 CST
+
+Analysis scope
+- The analysis reads only data_processed/local_only/timss_g8_analysis_data.rds.
+- The prepared source contains 47 education systems.
+- Achievement models contain 44 systems, 272315 students, and 8171 schools.
+- Systems excluded because their content-domain PVs contain no valid values: BRA | CIV | PSE.
+- All reported relationships are associational and must not be described causally.
+
+Variables and factor references
+- BSBGHER is the continuous Home Educational Resources predictor.
+- ict_access is a factor; No is the reference and Yes is the comparison.
+- language_at_home is a factor with levels Always | Almost always | Sometimes | Never; Always is the reference.
+- IDGRADER is not used as a model predictor.
+- IDGRADER validation found observed code(s): 2; missing rows: 0.
+- factor(system_id) is included as education-system fixed effects.
+- school_uid is used as the school random-intercept grouping variable.
+
+Weighting
+- TOTWGT and SENWGT are retained unchanged in the processed RDS.
+- The fitted models use analysis_weight_candidate from Round 3.
+- Round 3 formula: SENWGT * 500 / sum(SENWGT within each system).
+- Full-source SENWGT system totals range from 499.999 to 500.000.
+- Full-source candidate-weight system totals range from 500.000 to 500.000.
+- The within-system SENWGT/TOTWGT ratio range was calculated as a relationship check; exact proportionality was not required because the two retained variables are distinct official weight forms.
+- In the 44-system complete-case sample, candidate-weight system totals range from 344.678 to 497.467.
+- Maximum absolute difference from the Round 3 candidate formula: 0.
+- For model fitting, candidate weights are divided by the common-sample mean (0.0771108) so that their mean is 1.
+- This constant rescaling preserves relative weights but avoids treating the unnormalised lme4 prior-weight scale as substantively meaningful.
+
+Variance-estimation limitation
+- stats::lm and lme4 use model-based standard errors with the specified prior weights.
+- JKZONE and JKREP were validated but thousands of replicate-weighted multilevel refits were deliberately not attempted.
+- The reported multilevel standard errors must not be described as full TIMSS JK2 design-based standard errors.
+- Sampling weights, system fixed effects, and the school random intercept address different parts of the design, but do not reproduce full JK2 variance.
+
+Model sequence
+- Model A: weighted D&P linear regression benchmark with system fixed effects.
+- Model B: weighted D&P null school-random-intercept model with system fixed effects.
+- Model C: weighted D&P main school-random-intercept model.
+- Models D-G: four weighted domain-difference school-random-intercept models on the identical complete-case sample.
+- All multilevel models use maximum likelihood, bobyqa, and maxfun=200000.
+- System fixed-effect coefficients remain in each fitted model but are omitted from focal CSV outputs.
+
+Plausible-value combination
+- Five separate models are fitted; the five PV scores are never averaged before fitting.
+- Q_bar is the mean of five coefficient estimates.
+- U_bar is the mean of five squared within-PV standard errors.
+- B is the sample variance of the five estimates.
+- T = U_bar + (1 + 1/5) * B; pooled SE = sqrt(T).
+- The reported degrees of freedom use the large-sample Rubin formula and do not claim an lme4-specific finite-sample denominator correction.
+- P-values are calculated from the pooled estimate and total variance; the five p-values are not averaged.
+- ICC is reported as the arithmetic mean and observed range across five PV-specific null models; Rubin's rules are not applied to ICC.
+- A first-pass versus multilevel discrepancy warning is recorded when the absolute difference exceeds 0.5 score points and 25 percent.
+- School variance at or below 1e-8 and ICC below 0.001 trigger warnings.
+
+Domain-difference interpretation
+- A positive HER or ICT coefficient means its association is stronger in Data and Probability than in the named comparison domain.
+- A negative coefficient means the association is weaker in Data and Probability.
+- A 95% confidence interval containing zero is not clear evidence of a domain difference.
+
+Model-object storage
+- Fitted lm and lmerMod objects are serialized and individually gzip-compressed inside outputs/local_only/main_analysis_models.rds.
+- The model archive is local only and must not be uploaded or committed.
+
+Automatic validation
+ check_id                               check status
+        1          Processed source structure   PASS
+        2              Common analytic sample   PASS
+        3    Weight relationship and validity   PASS
+        4                Required model count   PASS
+        5          Required model convergence   PASS
+        6       Five PV fits per model family   PASS
+        7         Required focal coefficients   PASS
+        8    Exactly five PV estimates pooled   PASS
+        9             Finite pooled estimates   PASS
+       10         ICC summary across five PVs   PASS
+       11      PV-specific sample consistency   PASS
+       12   Singular and boundary diagnostics   PASS
+       13 Model archive and aggregate outputs   PASS
+                                                                                                                                                                     details
+                                                                                                                                              Rows=323920; source systems=47
+                                                                                                  Main rows=272315; domain rows=272315; systems=44; excluded=BRA | CIV | PSE
+                                                                                                           Maximum candidate-formula difference=0; mean model weight=1.00000
+                                                                                                                Model fits recorded=35; model objects stored=35; expected=35
+                                                                                                                                            Non-converged or failed models=0
+                                      A_first_pass_dp=5; B_null_dp=5; C_main_dp=5; D_dp_minus_number=5; E_dp_minus_algebra=5; F_dp_minus_geometry=5; G_dp_minus_other_mean=5
+                                                                                                                         Models with missing focal or control coefficients=0
+                                                                                                                           Pooled coefficient rows=30; rows with five PVs=30
+                                                                                                                              All required pooled numeric values finite=TRUE
+                                                                                                                                           Valid ICC values=5; mean=0.310660
+                                                                                                                         Model families with differing PV-specific samples=0
+                                                                                                                                            Singular fits=0; boundary fits=0
+ model_objects=present; first_pass=present; main_multilevel=present; domain_difference=present; icc_summary=present; model_diagnostics=present; model_sample_summary=present
+
+Recorded analysis warnings: 1
+- First-pass and multilevel focal estimates differ by more than 25% and 0.5 score points for: BSBGHER | ict_accessYes.
+
+Final analysis status: PASS WITH WARNINGS
